@@ -37,7 +37,7 @@ class _BuildingProfessorsViewState extends State<BuildingProfessorsView> {
 
     try {
       final response = await dio.get(
-        "http://localhost:8000/profesoresf/edificio/${widget.buildingId}",
+        "https://maposting-backend.onrender.com/profesoresf/edificio/${widget.buildingId}",
       );
 
       if (response.statusCode == 200) {

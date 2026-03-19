@@ -4,7 +4,7 @@ import 'package:flutter_front/data/models/evento.dart';
 
 class ApiService {
   // 🔧 Cambia esta URL según tu entorno
-  static const String baseUrl = 'http://localhost:8000'; // Backend local
+  static const String baseUrl = 'https://maposting-backend.onrender.com'; // Backend local
   // static const String baseUrl = 'http://10.0.2.2:8000'; // Android Emulator
   // static const String baseUrl = 'https://tu-api-produccion.com'; // Producción
 

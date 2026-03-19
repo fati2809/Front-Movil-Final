@@ -29,7 +29,7 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
     try {
       // Endpoint para TODOS los profesores (sin filtro por edificio)
       final response = await dio.get(
-        "http://localhost:8000/profesoresf",  // ← Cambia por tu URL real
+        "https://maposting-backend.onrender.com/profesoresf",  // ← Cambia por tu URL real
       );
 
       if (response.statusCode == 200) {

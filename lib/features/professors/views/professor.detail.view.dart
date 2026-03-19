@@ -54,7 +54,7 @@ class _ProfessorDetailViewState extends State<ProfessorDetailView> {
   Future<void> _fetchHorario() async {
     try {
       final url = Uri.parse(
-        'http://localhost:8000/profesoresf/${widget.idProfe}/horario',
+        'https://maposting-backend.onrender.com/profesoresf/${widget.idProfe}/horario',
       );
       final response = await http.get(url);
 

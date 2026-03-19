@@ -44,7 +44,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
     try {
       // Cambia 'https://tu-api-url' por tu URL real del backend
       final url = Uri.parse(
-        'http://localhost:8000/profesoresf/edificio/${widget.idBuilding}',
+        'https://maposting-backend.onrender.com/profesoresf/edificio/${widget.idBuilding}',
       );
       final response = await http.get(url);
 

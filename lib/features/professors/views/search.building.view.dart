@@ -30,10 +30,10 @@ class _SearchBuildingViewState extends State<SearchBuildingView> {
   Future<void> _loadBuildings() async {
     try {
       final buildingsResponse = await dio.get(
-        "http://localhost:8000/edificios",
+        "https://maposting-backend.onrender.com/edificios",
       );
       final professorsResponse = await dio.get(
-        "http://localhost:8000/profesoresf",
+        "https://maposting-backend.onrender.com/profesoresf",
       );
 
       final buildingsData = buildingsResponse.data as List<dynamic>;
