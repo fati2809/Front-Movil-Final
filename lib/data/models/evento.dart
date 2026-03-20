@@ -46,6 +46,7 @@ class Evento {
   final String? descripEvent;
   final String? imgEvent;
   final Edificio? edificio;
+  final int? idBuilding;
 
   Evento({
     required this.id,
@@ -59,33 +60,38 @@ class Evento {
     this.descripEvent,
     this.imgEvent,
     this.edificio,
+    this.idBuilding
   });
 
-  factory Evento.fromJson(Map<String, dynamic> json) {
-    final dt = json['timedate_event'] != null
-        ? DateTime.parse(json['timedate_event']).toLocal()
-        : null;
+factory Evento.fromJson(Map<String, dynamic> json) {
+  final dt = json['timedate_event'] != null
+      ? DateTime.parse(json['timedate_event']).toLocal()
+      : null;
 
-    final edificioJson = json['edificios'];
+  final edificioJson = json['edificios'];
 
-    return Evento(
-      id: json['id_event'] as int,
-      nameEvent: json['name_event'] as String,
-      timedateEvent: dt,
-      statusEvent: json['status_event'] as int?,
-      idProfe: json['id_profe'] as int?,
-      idUser: json['id_user'] as String?,
-      descripEvent: json['descrip_event'] as String?,
-      imgEvent: json['img_event'] as String?,
-      edificio: edificioJson != null ? Edificio.fromJson(edificioJson) : null,
-      dias: dt != null
-          ? '${_diaSemana(dt.weekday)} ${dt.day} ${_mes(dt.month)}'
-          : 'Sin fecha',
-      horario: dt != null
-          ? '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
-          : 'Sin horario',
-    );
-  }
+  return Evento(
+    id: json['id_event'] as int,
+    nameEvent: json['name_event'] as String,
+    timedateEvent: dt,
+    statusEvent: json['status_event'] as int?,
+    idProfe: json['id_profe'] as int?,
+    idUser: json['id_user'] as String?,
+    descripEvent: json['descrip_event'] as String?,
+    imgEvent: json['img_event'] as String?,
+
+    idBuilding: json['id_building'] as int?,
+
+    edificio: edificioJson != null ? Edificio.fromJson(edificioJson) : null,
+
+    dias: dt != null
+        ? '${_diaSemana(dt.weekday)} ${dt.day} ${_mes(dt.month)}'
+        : 'Sin fecha',
+    horario: dt != null
+        ? '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
+        : 'Sin horario',
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

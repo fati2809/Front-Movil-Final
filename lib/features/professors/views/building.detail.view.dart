@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:flutter_front/features/auth/views/login.view.dart';     // ← importa tu pantalla de login
+import 'package:flutter_front/features//auth/views/register.view.dart'; // ← opcional, si quieres mostrar registro
+
 class BuildingDetailView extends StatefulWidget {
   final int idBuilding;
   final String nameBuilding;
@@ -13,7 +16,7 @@ class BuildingDetailView extends StatefulWidget {
   final String? imagenUrl;
   final double? latBuilding;
   final double? lonBuilding;
-  final String? descriptionBuilding; // ← Nuevo: descrip_building
+  final String? descriptionBuilding;
 
   const BuildingDetailView({
     Key? key,
@@ -32,17 +35,37 @@ class BuildingDetailView extends StatefulWidget {
 
 class _BuildingDetailViewState extends State<BuildingDetailView> {
   List<Map<String, dynamic>> profesores = [];
-  bool isLoadingProfes = true;
+  bool isLoadingProfes = false;
+  bool isLoggedIn = false; // ← importante: inicia en false para testing
 
   @override
   void initState() {
     super.initState();
-    _fetchProfesoresEnEdificio();
+    _checkLoginAndFetch();
+  }
+
+  Future<void> _checkLoginAndFetch() async {
+    // Aquí va tu lógica real de verificación de sesión
+    // Ejemplos:
+    // 1. Supabase:    isLoggedIn = Supabase.instance.client.auth.currentUser != null;
+    // 2. SharedPreferences:
+    //    final prefs = await SharedPreferences.getInstance();
+    //    isLoggedIn = prefs.getString('auth_token') != null;
+
+    // Por ahora usamos valor fijo para pruebas rápidas
+    // → cámbialo a true cuando quieras ver los nombres sin login
+    isLoggedIn = false; // ← CAMBIA AQUÍ PARA PROBAR AMBOS CASOS
+
+    if (isLoggedIn) {
+      await _fetchProfesoresEnEdificio();
+    } else {
+      setState(() => isLoadingProfes = false);
+    }
   }
 
   Future<void> _fetchProfesoresEnEdificio() async {
+    setState(() => isLoadingProfes = true);
     try {
-      // Cambia 'https://tu-api-url' por tu URL real del backend
       final url = Uri.parse(
         'https://maposting-backend.onrender.com/profesoresf/edificio/${widget.idBuilding}',
       );
@@ -56,20 +79,19 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
         });
       } else {
         setState(() => isLoadingProfes = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error al cargar profesores (${response.statusCode})',
-            ),
-          ),
-        );
+        _showError('Error al cargar profesores (${response.statusCode})');
       }
     } catch (e) {
       setState(() => isLoadingProfes = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      _showError('Error de conexión: $e');
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -94,7 +116,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header con imagen o placeholder
+            // Header (imagen + nombre) → sin cambios
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -103,8 +125,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child:
-                        widget.imagenUrl != null &&
+                    child: widget.imagenUrl != null &&
                             widget.imagenUrl!.isNotEmpty &&
                             widget.imagenUrl != 'NULL'
                         ? Image.network(
@@ -142,7 +163,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Descripción del edificio (nuevo campo importante)
+                  // Descripción → sin cambios
                   if (widget.descriptionBuilding != null &&
                       widget.descriptionBuilding!.isNotEmpty &&
                       widget.descriptionBuilding != 'NULL') ...[
@@ -173,7 +194,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
                     const SizedBox(height: 32),
                   ],
 
-                  // Profesores en este edificio
+                  // Sección Profesores
                   Row(
                     children: [
                       const Text(
@@ -194,6 +215,8 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
 
                   if (isLoadingProfes)
                     const Center(child: CircularProgressIndicator())
+                  else if (!isLoggedIn)
+                    _buildLoginRequired()
                   else if (profesores.isEmpty)
                     const Center(
                       child: Padding(
@@ -241,7 +264,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
 
                   const SizedBox(height: 40),
 
-                  // Botón para ver en el mapa
+                  // Botón mapa → sin cambios
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -278,6 +301,91 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoginRequired() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      child: Column(
+        children: [
+          Icon(
+            Icons.lock_outline,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Inicia sesión para ver los profesores',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Solo usuarios registrados pueden ver la lista de profesores asignados a este edificio',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginView(),
+                  ),
+                );
+
+                if (result == true && mounted) {
+                  setState(() {
+                    isLoggedIn = true;
+                  });
+                  await _fetchProfesoresEnEdificio();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: GlobalColors.mainColor,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Iniciar sesión',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterView()),
+              );
+            },
+            child: Text(
+              '¿No tienes cuenta? Regístrate',
+              style: TextStyle(
+                color: GlobalColors.mainColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

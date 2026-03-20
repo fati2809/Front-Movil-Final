@@ -42,10 +42,7 @@ class _CalendarViewState extends State<CalendarView> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
+
             ],
           ),
         ),

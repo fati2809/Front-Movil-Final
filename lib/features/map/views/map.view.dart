@@ -26,17 +26,15 @@ class CampusNode {
 
 class _MapViewState extends State<MapView> {
   bool debugUseNodeA = false;
-
   final MapController _mapController = MapController();
   LatLng? _userPosition;
+  String? _currentBuildingInside;
   Stream<Position>? _positionStream;
 
   List<String> _currentPathIds = [];
   List<LatLng> _routePoints = [];
-
   List<List<String>> _alternativePathIds = [];
   List<List<LatLng>> _alternativeRoutePoints = [];
-
   List<double> _routeDistancesMeters = [];
   String? _currentDestinationId;
   bool _isUserInsideCampus = true;
@@ -67,11 +65,46 @@ class _MapViewState extends State<MapView> {
       LatLng(20.6550855, -100.4058485),
       LatLng(20.6554174, -100.4053999),
     ),
-    
-
+    "Biblioteca": LatLngBounds(
+      LatLng(20.6548263, -100.4040373),
+      LatLng(20.6551507, -100.4037148)
+    ),
+    "Laboratorio E": LatLngBounds(
+      LatLng(20.6538130, -100.4040896),
+      LatLng(20.6540652, -100.4038174)
+    ),
+    "Auditorio": LatLngBounds(
+      LatLng(20.6557819, -100.4060798),
+      LatLng(20.6563654, -100.4058170)
+    ),
+    "Edificio CISCO": LatLngBounds(
+      LatLng(20.6576424, -100.4038113),
+      LatLng(20.6581228, -100.4031133)
+    ),
+    "Edificio PIDET":LatLngBounds(
+      LatLng(20.6572152, -100.4037268),
+      LatLng(20.6575194, -100.4033694)
+    )
   };
 
-  String? _currentBuildingInside;
+  LatLng get _effectiveUserPosition {
+  if (_currentBuildingInside != null &&
+      campusGraph.containsKey(_currentBuildingInside)) {
+    final buildingPos = campusGraph[_currentBuildingInside]!.position;
+
+    final distance = const Distance().as(
+      LengthUnit.Meter,
+      _userPosition!,
+      buildingPos,
+    );
+
+    if (distance < 10) {
+      return buildingPos;
+    }
+  }
+  return _userPosition ?? const LatLng(20.6534, -100.4041);
+}
+
 
   String? _detectBuilding(LatLng position) {
     for (final entry in buildingBounds.entries) {
@@ -171,7 +204,7 @@ class _MapViewState extends State<MapView> {
     "BB1": const LatLng(20.6546557, -100.4039361),
     "BB2": const LatLng(20.6548012, -100.4037463),
     "BB3": const LatLng(20.6548213, -100.4037356),
-    "BB4": const LatLng(20.6548822, -100.4037443),
+    "Biblioteca": const LatLng(20.6548822, -100.4037443),
     "Edificio de Idiomas": const LatLng(20.6549889, -100.4063152),
     "AUD1": const LatLng(20.6553591, -100.4059464),
     "AUD2": const LatLng(20.6554952, -100.4059142),
@@ -354,8 +387,8 @@ class _MapViewState extends State<MapView> {
     "CF7": ["CF6", "Q2"],
     "BB1": ["BB2", "G10"],
     "BB2": ["BB1", "BB3"],
-    "BB3": ["BB2", "BB4"],
-    "BB4": ["BB3"],
+    "BB3": ["BB2", "Biblioteca"],
+    "Biblioteca": ["BB3"],
     "AUD1": ["AUD2", "BH2"],
     "AUD2": ["AUD1", "AUD3", "Auditorio"],
     "Auditorio": ["AUD2"],
@@ -472,6 +505,7 @@ class _MapViewState extends State<MapView> {
     "Laboratorio J",
     "Baño1",
     "Baño2",
+    "Biblioteca"
   ];
 
   late final Map<String, CampusNode> campusGraph = _buildGraph();
@@ -492,7 +526,7 @@ class _MapViewState extends State<MapView> {
   void initState() {
     super.initState();
     if (debugUseNodeA) {
-      _userPosition = campusGraph["CISCO14-5"]?.position;
+      _userPosition = campusGraph["Biblioteca"]?.position;
     } else {
       _initLocation();
     }
@@ -531,6 +565,19 @@ class _MapViewState extends State<MapView> {
 
     _positionStream!.listen((Position pos) {
       LatLng newPos = LatLng(pos.latitude, pos.longitude);
+
+      if (_userPosition != null) {
+        final distance = const Distance().as(
+          LengthUnit.Meter,
+          _userPosition!,
+          newPos,
+        );
+
+        if (distance < 10) {
+          return;
+        }
+      }
+
       bool inside = campusBounds.contains(newPos);
 
       setState(() {
@@ -540,7 +587,7 @@ class _MapViewState extends State<MapView> {
       });
 
       if (inside && _currentDestinationId != null) {
-        _handleAutoRecalculation(newPos);
+        _handleAutoRecalculation(_effectiveUserPosition);
       }
     });
   }
@@ -551,7 +598,7 @@ class _MapViewState extends State<MapView> {
       return;
     }
 
-    _updateUserNodeInGraph(_userPosition!);
+    _updateUserNodeInGraph(_effectiveUserPosition);
     _currentDestinationId = destinationId;
 
     setState(() {
@@ -845,7 +892,7 @@ class _MapViewState extends State<MapView> {
                 "Lng: ${node.position.longitude.toStringAsFixed(6)}";
 
             if (_userPosition != null) {
-              _updateUserNodeInGraph(_userPosition!);
+              _updateUserNodeInGraph(_effectiveUserPosition);
               List<String> path = _dijkstra("US", id);
               double distance = _calculatePathDistance(path);
               const double speedKmH = 4.8;
@@ -1012,7 +1059,7 @@ class _MapViewState extends State<MapView> {
   Marker? _buildUserMarker() {
     if (_userPosition == null) return null;
     return Marker(
-      point: _userPosition!,
+      point: _effectiveUserPosition,
       width: 40,
       height: 40,
       child: const Icon(Icons.my_location, color: Colors.blue, size: 30),
