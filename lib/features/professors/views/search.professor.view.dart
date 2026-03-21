@@ -16,7 +16,7 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _professors = [];
   List<dynamic> _filteredProfessors = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
   final Dio dio = Dio();
 
   bool isLoggedIn = false;
