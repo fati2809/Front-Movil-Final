@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_front/utils/global.colors.dart';
 import 'package:flutter_front/features/events/views/event.detail.view.dart';
@@ -14,17 +15,29 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView> {
   late Future<List<Evento>> _eventosFuture;
   final ApiService _apiService = ApiService();
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _cargarEventos();
+
+    // 🔄 Actualiza cada 5 segundos
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _cargarEventos();
+    });
   }
 
   Future<void> _cargarEventos() async {
     setState(() {
       _eventosFuture = _apiService.getEventos();
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // 🛑 Evita fugas de memoria
+    super.dispose();
   }
 
   @override
@@ -36,13 +49,12 @@ class _CalendarViewState extends State<CalendarView> {
           padding: const EdgeInsets.all(16),
           color: Colors.white,
           child: Row(
-            children: [
-              const Text(
+            children: const [
+              Text(
                 'Edificios con eventos',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              const Spacer(),
-
+              Spacer(),
             ],
           ),
         ),
@@ -94,8 +106,11 @@ class _CalendarViewState extends State<CalendarView> {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final evento = eventos[index];
+
                     return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 12),
+
                       leading: evento.imgEvent != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(8),
@@ -116,6 +131,7 @@ class _CalendarViewState extends State<CalendarView> {
                               size: 40,
                               color: GlobalColors.mainColor,
                             ),
+
                       title: Text(
                         evento.nameEvent,
                         style: const TextStyle(
@@ -123,10 +139,12 @@ class _CalendarViewState extends State<CalendarView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 4),
+
                           Row(
                             children: [
                               Icon(
@@ -152,6 +170,7 @@ class _CalendarViewState extends State<CalendarView> {
                               ),
                             ],
                           ),
+
                           if (evento.edificio?.nameBuilding != null) ...[
                             const SizedBox(height: 2),
                             Row(
@@ -159,14 +178,14 @@ class _CalendarViewState extends State<CalendarView> {
                                 Icon(
                                   Icons.location_on,
                                   size: 13,
-                                  color: Colors.grey[600],
+                                  color: Colors.grey,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   evento.edificio!.nameBuilding!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 13,
-                                    color: Colors.grey[600],
+                                    color: Colors.grey,
                                   ),
                                 ),
                               ],
@@ -174,11 +193,13 @@ class _CalendarViewState extends State<CalendarView> {
                           ],
                         ],
                       ),
+
                       trailing: Icon(
                         Icons.arrow_forward_ios,
                         color: GlobalColors.mainColor,
                         size: 20,
                       ),
+
                       onTap: () {
                         Navigator.push(
                           context,
@@ -198,11 +219,11 @@ class _CalendarViewState extends State<CalendarView> {
 
         Container(
           padding: const EdgeInsets.all(16),
-          color: Colors.grey[100],
+          color: Colors.grey,
           child: const Text(
             'Los horarios pueden sufrir cambios sin previo aviso',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: Colors.white),
           ),
         ),
       ],

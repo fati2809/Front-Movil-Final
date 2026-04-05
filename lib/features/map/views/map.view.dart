@@ -393,7 +393,7 @@ class _MapViewState extends State<MapView> {
     "AUD2": ["AUD1", "AUD3", "Auditorio"],
     "Auditorio": ["AUD2"],
     "AUD3": ["AUD2", "AUD4", "NA1"],
-    "AUD4": ["AUD3", "Auditorio2"],
+    "AUD4": ["AUD3", "Auditorio2","AUD5"],
     "AUD5": ["AUD4", "NA4"],
     "Auditorio2": ["AUD4"],
     "NA1": ["NA2", "BH5", "AUD3"],
@@ -402,7 +402,7 @@ class _MapViewState extends State<MapView> {
     "NA3": ["NA2", "NA4"],
     "NA4": ["NA3", "NA5", "AUD5"],
     "NA5": ["NA4", "NA6", "OUT1"],
-    "NA6": ["NA5", "Edificio Nanotecnologia"],
+    "NA6": ["NA5", "Edificio Nanotecnologia", "GP3"],
     "Edificio Nanotecnologia": ["NA6"],
     "GP1": ["BH11", "GP2", "GP3"],
     "GP2": ["GP1", "Edificio G"],
@@ -526,7 +526,7 @@ class _MapViewState extends State<MapView> {
   void initState() {
     super.initState();
     if (debugUseNodeA) {
-      _userPosition = campusGraph["Biblioteca"]?.position;
+      _userPosition = campusGraph["Auditorio2"]?.position;
     } else {
       _initLocation();
     }
