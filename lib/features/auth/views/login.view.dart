@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_front/utils/global.colors.dart';
 import 'package:flutter_front/features/auth/views/register.view.dart';
 import 'package:flutter_front/features/auth/controllers/auth_controller.dart';
+import 'package:flutter_front/features/home/views/home.view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -38,14 +39,14 @@ class _LoginViewState extends State<LoginView> {
 
     final success = await _authController.login(email, password);
     if (success) {
-      Get.back(); // Volver a la pantalla anterior
+      Get.offAll(() => const HomeView());
     }
   }
 
   Future<void> _handleGoogleLogin() async {
     final success = await _authController.signInWithGoogle();
     if (success) {
-      Get.back(); // Volver a la pantalla anterior
+      Get.offAll(() => const HomeView());
     }
   }
 

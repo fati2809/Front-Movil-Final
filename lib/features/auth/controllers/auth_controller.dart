@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter_front/data/services/api_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -5,12 +6,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthController extends GetxController {
   final ApiService _api = ApiService();
 
-  // ⚠️ Para iOS, necesitas especificar el CLIENT_ID del archivo GoogleService-Info.plist
+  // ⚠️ serverClientId es el Web Client ID (client_type: 3) de google-services.json
+  // En Android, el SDK detecta automáticamente el Android Client ID del google-services.json
+  // En iOS, se necesita el clientId del GoogleService-Info.plist
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    // Este clientId es específico para iOS (del GoogleService-Info.plist)
-    clientId:
-        '816053825270-td99l325vtk98nbgv1djh78pdbcht3hp.apps.googleusercontent.com',
+    serverClientId:
+        '816053825270-ju25119bbbmq0tdbbblhu7rgp5etekb4.apps.googleusercontent.com',
   );
 
   // Estado observable de la sesión
@@ -29,21 +31,21 @@ class AuthController extends GetxController {
     try {
       final token = await _api.getToken();
       if (token != null && token.isNotEmpty) {
-        // Intentar recuperar datos del usuario guardados
-        final userData = await _api.storage.read(key: 'user_data');
+        final userDataStr = await _api.storage.read(key: 'user_data');
 
-        if (userData != null && userData.isNotEmpty) {
-          // Parsear los datos básicos (esto es una solución temporal)
-          // En producción, deberías guardar como JSON
-          isLoggedIn.value = true;
-          print('✅ Sesión activa encontrada');
-
-          // TODO: Validar token con el backend
-          // Opcional: hacer una llamada al backend para verificar que el token sigue válido
-        } else {
-          isLoggedIn.value = true; // Tenemos token pero no datos locales
-          print('✅ Token encontrado, pero sin datos de usuario almacenados');
+        if (userDataStr != null && userDataStr.isNotEmpty) {
+          try {
+            user.value = Map<String, dynamic>.from(jsonDecode(userDataStr));
+            print('✅ Sesión activa encontrada: ${user.value?['name']}');
+          } catch (_) {
+            print('⚠️ No se pudo parsear user_data, limpiando sesión');
+            await _api.clearStorage();
+            isLoggedIn.value = false;
+            user.value = null;
+            return;
+          }
         }
+        isLoggedIn.value = true;
       } else {
         isLoggedIn.value = false;
         user.value = null;
@@ -89,7 +91,7 @@ class AuthController extends GetxController {
         // Guardar también el usuario en storage para persistencia
         await _api.storage.write(
           key: 'user_data',
-          value: user.value.toString(),
+          value: jsonEncode(user.value),
         );
 
         isLoggedIn.value = true;
@@ -239,7 +241,7 @@ class AuthController extends GetxController {
 
           await _api.storage.write(
             key: 'user_data',
-            value: user.value.toString(),
+            value: jsonEncode(user.value),
           );
           isLoggedIn.value = true;
 
@@ -258,28 +260,13 @@ class AuthController extends GetxController {
           return false;
         }
       } catch (backendError) {
-        // Si el backend aún no tiene endpoint de Google, simulamos logout
         print('⚠️ Endpoint /login/google no disponible: $backendError');
-        print(
-          'ℹ️ Para usar Google Sign-In, necesitas crear el endpoint en tu backend',
-        );
-
-        // Por ahora, guardamos la info de Google localmente
-        user.value = {
-          'name': googleUser.displayName ?? 'Usuario de Google',
-          'email': googleUser.email,
-          'photo': googleUser.photoUrl,
-        };
-        isLoggedIn.value = true;
-
         Get.snackbar(
-          'Bienvenido',
-          'Hola ${googleUser.displayName}',
+          'Error',
+          'No se pudo conectar con el servidor. Intenta más tarde.',
           snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4),
         );
-
-        return true;
+        return false;
       }
     } catch (e) {
       print('❌ Error en Google Sign-In: $e');

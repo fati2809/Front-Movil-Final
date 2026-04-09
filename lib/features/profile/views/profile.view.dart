@@ -50,7 +50,7 @@ class ProfileView extends StatelessWidget {
               // Email/Matrícula
               if (isLoggedIn)
                 Text(
-                  user?['email'] ?? user?['matricula'] ?? 'usuario@uteq.edu.mx',
+                  user?['email'] ?? user?['matricula']?.toString() ?? 'usuario@uteq.edu.mx',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[600],
@@ -79,7 +79,7 @@ class ProfileView extends StatelessWidget {
                 _buildInfoCard(
                   icon: Icons.badge,
                   title: 'Matrícula',
-                  subtitle: user?['matricula'] ?? 'No disponible',
+                  subtitle: user?['matricula']?.toString() ?? 'No disponible',
                 ),
                 const SizedBox(height: 12),
                 _buildInfoCard(

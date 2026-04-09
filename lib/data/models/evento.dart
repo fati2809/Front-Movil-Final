@@ -15,7 +15,7 @@ class Edificio {
 
   factory Edificio.fromJson(Map<String, dynamic> json) {
     return Edificio(
-      idBuilding: json['id_building'] as int,
+      idBuilding: (json['id_building'] as int?) ?? 0,
       nameBuilding: json['name_building'] as String?,
       lat: (json['lat_building'] as num?)?.toDouble(),
       lon: (json['lon_building'] as num?)?.toDouble(),
@@ -71,8 +71,8 @@ factory Evento.fromJson(Map<String, dynamic> json) {
   final edificioJson = json['edificios'];
 
   return Evento(
-    id: json['id_event'] as int,
-    nameEvent: json['name_event'] as String,
+    id: (json['id_event'] as int?) ?? 0,
+    nameEvent: (json['name_event'] as String?) ?? '',
     timedateEvent: dt,
     statusEvent: json['status_event'] as int?,
     idProfe: json['id_profe'] as int?,
