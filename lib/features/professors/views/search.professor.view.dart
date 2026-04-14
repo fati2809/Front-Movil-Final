@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:flutter_front/utils/global.colors.dart';
+import 'package:flutter_front/features/auth/controllers/auth_controller.dart';
 import 'package:flutter_front/features/auth/views/register.view.dart';
 import 'package:flutter_front/features/auth/views/login.view.dart';
 import 'package:flutter_front/features/professors/views/professor.detail.view.dart';
@@ -18,8 +20,7 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
   List<dynamic> _filteredProfessors = [];
   bool _isLoading = false;
   final Dio dio = Dio();
-
-  bool isLoggedIn = false;
+  final AuthController _authController = Get.find();
 
   @override
   void initState() {
@@ -29,12 +30,7 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
   }
 
   Future<void> _checkLoginAndFetch() async {
-    // Aquí deberías poner la verificación real de sesión
-    // Ejemplo placeholder (cámbialo por tu lógica real):
-    // bool logged = await AuthService.isLoggedIn();
-    // setState(() => isLoggedIn = logged);
-
-    if (isLoggedIn) {
+    if (_authController.isLoggedIn.value) {
       await _fetchAllProfessors();
     } else {
       setState(() => _isLoading = false);
@@ -105,9 +101,9 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
           ),
         ),
       ),
-      body: isLoggedIn
+      body: Obx(() => _authController.isLoggedIn.value
           ? _buildProfessorsContent()
-          : _buildLoginRequired(),
+          : _buildLoginRequired()),
     );
   }
 
@@ -147,13 +143,12 @@ class _SearchAllProfessorsViewState extends State<SearchAllProfessorsView> {
               height: 50,
               child: ElevatedButton(
                 onPressed: () async {
-                  final result = await Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginView()),
                   );
-                  // Opcional: si regresó y ahora está logueado, recargar
-                  if (result == true) {
-                    setState(() => isLoggedIn = true);
+                  // Si regresó logueado, recargar profesores
+                  if (_authController.isLoggedIn.value) {
                     _fetchAllProfessors();
                   }
                 },

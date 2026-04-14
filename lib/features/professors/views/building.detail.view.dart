@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_front/utils/global.colors.dart';
-import 'package:flutter_front/features/map/views/map.view.dart';
 import 'package:flutter_front/features/home/views/home.view.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:flutter_front/features/auth/views/login.view.dart';     // ← importa tu pantalla de login
-import 'package:flutter_front/features//auth/views/register.view.dart'; // ← opcional, si quieres mostrar registro
+import 'package:flutter_front/features/auth/controllers/auth_controller.dart';
+import 'package:flutter_front/features/auth/views/login.view.dart';
+import 'package:flutter_front/features/auth/views/register.view.dart';
 
 class BuildingDetailView extends StatefulWidget {
   final int idBuilding;
@@ -36,7 +36,7 @@ class BuildingDetailView extends StatefulWidget {
 class _BuildingDetailViewState extends State<BuildingDetailView> {
   List<Map<String, dynamic>> profesores = [];
   bool isLoadingProfes = false;
-  bool isLoggedIn = false; // ← importante: inicia en false para testing
+  final AuthController _authController = Get.find();
 
   @override
   void initState() {
@@ -45,18 +45,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
   }
 
   Future<void> _checkLoginAndFetch() async {
-    // Aquí va tu lógica real de verificación de sesión
-    // Ejemplos:
-    // 1. Supabase:    isLoggedIn = Supabase.instance.client.auth.currentUser != null;
-    // 2. SharedPreferences:
-    //    final prefs = await SharedPreferences.getInstance();
-    //    isLoggedIn = prefs.getString('auth_token') != null;
-
-    // Por ahora usamos valor fijo para pruebas rápidas
-    // → cámbialo a true cuando quieras ver los nombres sin login
-    isLoggedIn = false; // ← CAMBIA AQUÍ PARA PROBAR AMBOS CASOS
-
-    if (isLoggedIn) {
+    if (_authController.isLoggedIn.value) {
       await _fetchProfesoresEnEdificio();
     } else {
       setState(() => isLoadingProfes = false);
@@ -215,7 +204,7 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
 
                   if (isLoadingProfes)
                     const Center(child: CircularProgressIndicator())
-                  else if (!isLoggedIn)
+                  else if (!_authController.isLoggedIn.value)
                     _buildLoginRequired()
                   else if (profesores.isEmpty)
                     const Center(
@@ -338,17 +327,14 @@ class _BuildingDetailViewState extends State<BuildingDetailView> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-                final result = await Navigator.push<bool>(
+                await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const LoginView(),
                   ),
                 );
 
-                if (result == true && mounted) {
-                  setState(() {
-                    isLoggedIn = true;
-                  });
+                if (_authController.isLoggedIn.value && mounted) {
                   await _fetchProfesoresEnEdificio();
                 }
               },
