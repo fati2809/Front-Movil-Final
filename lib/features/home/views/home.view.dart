@@ -61,10 +61,7 @@ void initState() {
         backgroundColor: Colors.white,
         elevation: 1,
         automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: Icon(Icons.notifications_outlined, color: GlobalColors.textColor),
-          onPressed: () => print('TODO: Notificaciones'),
-        ),
+        centerTitle: true,
         title: Text(
           'MAPPOSTING',
           style: TextStyle(color: GlobalColors.mainColor, fontWeight: FontWeight.bold),
