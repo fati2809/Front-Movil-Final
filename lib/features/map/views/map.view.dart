@@ -25,7 +25,7 @@ class CampusNode {
 }
 
 class _MapViewState extends State<MapView> {
-  bool debugUseNodeA = false;
+  bool debugUseNodeA = true;
   final MapController _mapController = MapController();
   LatLng? _userPosition;
   String? _currentBuildingInside;
@@ -73,7 +73,7 @@ class _MapViewState extends State<MapView> {
       LatLng(20.6538130, -100.4040896),
       LatLng(20.6540652, -100.4038174)
     ),
-    "Auditorio": LatLngBounds(
+    "Auditorio2": LatLngBounds(
       LatLng(20.6557819, -100.4060798),
       LatLng(20.6563654, -100.4058170)
     ),
@@ -211,8 +211,8 @@ class _MapViewState extends State<MapView> {
     "AUD3": const LatLng(20.6555348, -100.4057305),
     "AUD4": const LatLng(20.6557393, -100.4058042),
     "AUD5": const LatLng(20.6557996, -100.4055776),
-    "Auditorio": const LatLng(20.6557933, -100.4059558),
-    "Auditorio2": const LatLng(20.6558133, -100.4058304),
+    "Auditorio2": const LatLng(20.6557933, -100.4059558),
+    "Auditorio": const LatLng(20.6558133, -100.4058304),
     "NA1": const LatLng(20.6555147, -100.4053724),
     "NA2": const LatLng(20.6556452, -100.4052544),
     "NANO1": const LatLng(20.6556791, -100.4050586),
@@ -296,6 +296,8 @@ class _MapViewState extends State<MapView> {
     "Edificio CISCO": const LatLng(20.6577528, -100.4034566),
     "Baño1": const LatLng(20.6541387, -100.4041493),
     "Baño2": const LatLng(20.6562124, -100.4041754),
+    "TEST1": const LatLng(20.6550115, -100.4046750),
+    "TEST2": const LatLng(20.656017, -100.406000),
   };
 
   final Map<String, List<String>> nodeConnections = {
@@ -390,12 +392,12 @@ class _MapViewState extends State<MapView> {
     "BB3": ["BB2", "Biblioteca"],
     "Biblioteca": ["BB3"],
     "AUD1": ["AUD2", "BH2"],
-    "AUD2": ["AUD1", "AUD3", "Auditorio"],
-    "Auditorio": ["AUD2"],
+    "AUD2": ["AUD1", "AUD3", "Auditorio2"],
+    "Auditorio2": ["AUD2"],
     "AUD3": ["AUD2", "AUD4", "NA1"],
-    "AUD4": ["AUD3", "Auditorio2","AUD5"],
+    "AUD4": ["AUD3", "Auditorio","AUD5"],
     "AUD5": ["AUD4", "NA4"],
-    "Auditorio2": ["AUD4"],
+    "Auditorio": ["AUD4"],
     "NA1": ["NA2", "BH5", "AUD3"],
     "NA2": ["NA1", "NANO1", "NA3"],
     "NANO1": ["NA2"],
@@ -523,13 +525,14 @@ class _MapViewState extends State<MapView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    if (debugUseNodeA) {
-      _userPosition = campusGraph["Auditorio2"]?.position;
-    } else {
-      _initLocation();
-    }
+void initState() {
+  super.initState();
+  if (debugUseNodeA) {
+    _userPosition = campusGraph["Auditorio"]?.position;
+    _isUserInsideCampus = true;
+  } else {
+    _initLocation();
+  }
 
     if (widget.initialDestinationId != null) {
       final destId = widget.initialDestinationId!;
